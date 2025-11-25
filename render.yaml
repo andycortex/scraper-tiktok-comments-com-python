@@ -1,19 +1,16 @@
 # render.yaml - Define los servicios para desplegar en Render
-# Render detectará este archivo y configurará los servicios automáticamente.
-
 services:
   # Servicio Web para la API de FastAPI
   - type: web
     name: tiktok-api
     env: docker
     dockerfilePath: ./Dockerfile.api
-    # Render automáticamente mapea el puerto para los servicios web.
-    # Deberás agregar los siguientes secretos en el panel de Render.
+    # Render usa el puerto expuesto en el Dockerfile (5000) y lo mapea a 80/443
     envVars:
       - key: MYSQL_HOST
         value: YOUR_EXTERNAL_MYSQL_HOST # Reemplaza esto en el panel de Render
       - key: MYSQL_PORT
-        value: 3307 # O el puerto de tu BD
+        value: 3307
       - key: MYSQL_DB
         sync: false # Secreto
       - key: MYSQL_USER
@@ -28,12 +25,11 @@ services:
     name: tiktok-worker
     env: docker
     dockerfilePath: ./Dockerfile.worker
-    # Deberás agregar los mismos secretos que en la API.
     envVars:
       - key: MYSQL_HOST
         value: YOUR_EXTERNAL_MYSQL_HOST # Reemplaza esto en el panel de Render
       - key: MYSQL_PORT
-        value: 3307 # O el puerto de tu BD
+        value: 3307
       - key: MYSQL_DB
         sync: false # Secreto
       - key: MYSQL_USER
