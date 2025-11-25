@@ -1,0 +1,44 @@
+# fly.toml - Archivo de configuración para Fly.io
+# https://fly.io/docs/reference/configuration/
+
+# CAMBIA ESTO por un nombre único para tu aplicación en Fly.io
+app = "tiktok-live-scraper"
+primary_region = "mia" # Elige una región cercana a ti: https://fly.io/docs/reference/regions/
+
+[build]
+  # Le dice a Fly.io que use el Dockerfile en el directorio actual
+  dockerfile = "Dockerfile"
+
+# Define los procesos que se ejecutarán.
+# Fly.io ejecutará ambos simultáneamente.
+[processes]
+  web    = "uvicorn src.tiktok_scraper.main:app --host 0.0.0.0 --port 8080"
+  worker = "python src/analyzer/worker.py"
+
+# Configuración del servicio web (API)
+# Define cómo se recibe el tráfico de internet.
+[[services]]
+  protocol = "tcp"
+  internal_port = 8080 # El puerto en el que escucha uvicorn
+  processes = ["web"]  # Este servicio solo se aplica al proceso 'web'
+
+  # Mapeo de puertos públicos a nuestro puerto interno
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+  # Límites de concurrencia para el servicio web
+  [services.concurrency]
+    type = "connections"
+    hard_limit = 25
+    soft_limit = 20
+
+  # Health check para asegurarse de que la API está funcionando
+  [[services.tcp_checks]]
+    interval = "15s"
+    timeout = "2s"
+    grace_period = "1s"
+    port = 8080
