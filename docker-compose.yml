@@ -1,0 +1,28 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: tiktok_api
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    restart: unless-stopped
+    # Asegúrate de que tu .env tiene las variables correctas para conectar a tu MySQL externo
+    # MYSQL_HOST, MYSQL_USER, MYSQL_PASSWORD, MYSQL_DB, MYSQL_PORT
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    container_name: tiktok_worker
+    depends_on:
+      - api
+    env_file:
+      - .env
+    restart: unless-stopped
+    # El worker también usa las variables del .env para la base de datos
